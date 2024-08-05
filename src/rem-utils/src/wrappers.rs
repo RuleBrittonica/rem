@@ -181,7 +181,7 @@ impl Into<syn::Expr> for IndexWrapper {
             };
 
             syn::Expr::Call(CHRusty_build!(syn::ExprCall {
-                func: box syn::Expr::Path(CHRusty_build!(syn::ExprPath{
+                func: Box::new(syn::Expr::Path(CHRusty_build!(syn::ExprPath{
                     path: syn::Path {
                         leading_colon: None,
                         segments: [
@@ -190,7 +190,7 @@ impl Into<syn::Expr> for IndexWrapper {
                         ].into_iter().collect()
                     };
                     default![attrs, qself]
-                })),
+                }))),
                 args: [expr].into_iter().collect();
                 default![attrs,paren_token]
             }))

@@ -45,7 +45,7 @@ impl FileSystem for RealFileSystem {
     }
 
     fn exists<P: AsRef<Path>>(&self, path: P) -> Result<bool, Self::FSError> {
-        std::fs::try_exists(path)
+        Ok(path.as_ref().exists())
     }
 }
 
@@ -182,6 +182,17 @@ impl<T: FileSystem> rustc_span::source_map::FileLoader for FileLoader<T> {
         log::debug!("reading -> {:?}", path);
         self.0
             .read(path)
+            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, format!("{:?}", e)))
+    }
+
+    fn read_binary_file(&self, path: &Path) -> std::io::Result<std::sync::Arc<[u8]>> {
+        log::debug!("reading binary -> {:?}", path);
+        self.0
+            .read(path)
+            .and_then(|content| {
+                let arc: std::sync::Arc<[u8]> = std::sync::Arc::from(content.into_bytes());
+                Ok(arc)
+            })
             .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, format!("{:?}", e)))
     }
 }
