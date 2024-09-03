@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Refactor Preview</title>
+  <link rel="stylesheet" href="{{cssUri}}">
+  <!-- Monaco Editor CDN -->
+  <script src="https://unpkg.com/monaco-editor@0.30.1/min/vs/loader.js"></script>
+</head>
+<body>
+  <div class="container">
+    <!-- Left Column -->
+    <div class="left-column">
+      <h1>Review Your Selections</h1>
+      <p><strong>Option:</strong> <span id="option">{{selectedOption}}</span></p>
+      <p><strong>Original Name:</strong> <span id="originalName">{{originalName}}</span></p>
+      <p><strong>New Name:</strong> <span id="newName">{{newName}}</span></p>
+    </div>
+
+    <!-- Right Column -->
+    <div class="right-column">
+      <!-- Dropdown for Selecting Comment Type -->
+      <div class="comment-type-container">
+        <label for="commentType">Select Comment Type:</label>
+        <select id="commentType">
+          <option value="none">None</option>
+          <option value="default">Default</option>
+          <!-- TODO: Add More Options Here -->
+          <!-- ! Don't forget to update the functions down below as well!! -->
+        </select>
+      </div>
+
+      <!-- Comment Editors -->
+      <div class="comment-editors-container">
+        <!-- Header Comment Editor -->
+        <label for="headerCommentContainer">Header Comment:</label>
+        <div id="headerCommentContainer" class="header-comment-container"></div>
+
+        <!-- Footer Comment Editor -->
+        <label for="footerCommentContainer">Footer Comment:</label>
+        <div id="footerCommentContainer" class="footer-comment-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Code Editors Container -->
+  <div class="container">
+    <div id="originalCodeContainer" class="editor-container"></div>
+    <div id="newCodeContainer" class="editor-container"></div>
+  </div>
+
+  <button id="previewButton">Preview</button>
+  <button id="confirmButton" style="display:none;">Confirm</button>
+
+  <script>
+    const vscode = acquireVsCodeApi();
+
+    // Initialize Monaco Editor
+    require.config({ paths: { 'vs': 'https://unpkg.com/monaco-editor@0.30.1/min/vs' }});
+    require(['vs/editor/editor.main'], () => {
+      let originalEditor = monaco.editor.create(document.getElementById('originalCodeContainer'), {
+        value: '',
+        language: 'rust',
+        theme: 'vs-dark',
+        readOnly: true
+      });
+      let newEditor = monaco.editor.create(document.getElementById('newCodeContainer'), {
+        value: '',
+        language: 'rust',
+        theme: 'vs-dark',
+        readOnly: true
+      });
+      let headerCommentEditor = monaco.editor.create(document.getElementById('headerCommentContainer'), {
+        value: '// Write header comments here',
+        language: 'rust',
+        theme: 'vs-dark',
+        readOnly: false
+      });
+      let footerCommentEditor = monaco.editor.create(document.getElementById('footerCommentContainer'), {
+        value: '// Write footer comments here',
+        language: 'rust',
+        theme: 'vs-dark',
+        readOnly: false
+      });
+
+      // Update editors with initial content
+      window.addEventListener('message', event => {
+        const message = event.data;
+        let newCode;
+        switch (message.command) {
+          case 'initialise':
+            originalEditor.setValue(message.data.originalCode);
+            newCode = 'Press Preview button to view a preview of the Refactored Code';
+            newEditor.setValue(newCode);
+            document.getElementById('option').textContent = message.data.option;
+            document.getElementById('originalName').textContent = message.data.originalName;
+            document.getElementById('newName').textContent = message.data.newName;
+            break;
+          case 'preview':
+            originalEditor.setValue(message.data.originalCode);
+            newCode = message.data.newCode;
+            newEditor.setValue(newCode);
+            break;
+          case 'showConfirmButton':
+            document.getElementById('confirmButton').style.display = 'inline';
+            break;
+        }
+      });
+
+      // Function to update header and footer comments based on dropdown selection
+      function updateComments() {
+        const headerComment = headerCommentEditor.getValue();
+        const footerComment = footerCommentEditor.getValue();
+        const commentType = document.getElementById('commentType').value;
+
+        if (commentType === 'none') {
+          headerCommentEditor.setValue('');
+          footerCommentEditor.setValue('');
+        } else if (commentType === 'default') {
+          const selectedOption = document.getElementById('option').textContent;
+          const originalName = document.getElementById('originalName').textContent;
+          const newName = document.getElementById('newName').textContent;
+
+          headerCommentEditor.setValue(`// Refactored Code BEGIN\n/*\n* Changed: ${selectedOption}\n* Original Name: ${originalName}\n* New Name: ${newName}\n*/`);
+          footerCommentEditor.setValue('// Refactored code END');
+        }
+        // TODO: Add more here as needed
+      }
+
+      // Event listener for dropdown changes
+      document.getElementById('commentType').addEventListener('change', updateComments);
+
+      document.getElementById('previewButton').addEventListener('click', () => {
+        const headerComment = headerCommentEditor.getValue();
+        const footerComment = footerCommentEditor.getValue();
+        const commentType = document.getElementById('commentType').value;
+
+        vscode.postMessage({
+          command: 'preview',
+          headerComment: headerComment,
+          footerComment: footerComment,
+          commentType: commentType
+        });
+      });
+
+      document.getElementById('confirmButton').addEventListener('click', () => {
+        const newCode = newEditor.getValue(); // Get the new code from the editor
+        vscode.postMessage({
+          command: 'confirm',
+          newCode: newCode
+        });
+        vscode.postMessage({ command: 'close' });
+      });
+    });
+  </script>
+</body>
+</html>
