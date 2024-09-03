@@ -8,7 +8,6 @@ members = [
     "src/rem-constraint",
     "src/experiment",
     "src/rem-cli",
-    "src/rem-vscode",
 ]
 
 resolver = "2"
