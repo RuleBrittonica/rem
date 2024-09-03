@@ -21,6 +21,9 @@ rustup component add --toolchain nightly-2024-08-28 rust-src rustc-dev llvm-tool
 rustup default nightly-2024-08-28
 ```
 
+Because of complications involving rustc internals, it is reccomended that this
+is the only version of the toolchain installed on your computer.
+
 Additionally, at some point in the future this CLI may also be dependent on
 `rust-analyzer`. Probably best to double check it as I'm sure I'll forget to
 update this when it becomes dependent on RLS.
@@ -183,3 +186,37 @@ testing phase.
   refactoring happens from there)
 
 - Update the documentation.
+
+## Getting started from scratch, with a fresh WSL install
+
+  1. Install Rust with default configurations
+
+  ```bash
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+  ```
+
+  2. Install the toolchain and set it as default
+  ```bash
+  rustup component add --toolchain nightly-2024-08-28 rust-src rustc-dev llvm-tools-preview
+rustup default nightly-2024-08-28
+  ```
+
+  3. Install rust-analyzer
+
+  ```bash
+  rustup component add rust-analyzer-preview
+  ```
+
+  4. Install required build tools: This will install the gcc compiler, which includes the cc linker
+
+  ```bash
+  sudo apt-get update
+  sudo apt-get install build-essential
+  ```
+
+  5. Install OpenSSL Dev Libraries
+
+  ```bash
+  sudo apt-get update
+  sudo apt-get install libssl-dev pkg-config
+  ```

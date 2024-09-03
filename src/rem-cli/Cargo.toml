@@ -10,10 +10,6 @@ categories = ["command-line-utilities", "development-tools"]
 readme = "README.md"
 
 [dependencies]
-rem-utils = { version = "0.1", path = "../rem-utils" }
-rem-controller = { version = "0.1", path = "../rem-controller" }
-rem-repairer = { version = "0.1", path = "../rem-repairer" }
-rem-borrower = { version = "0.1", path = "../rem-borrower" }
 clap = { version = "4.5.16", features = ["derive"] }
 log = "0.4.22"
 flexi_logger = "0.29.0"
