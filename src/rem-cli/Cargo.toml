@@ -22,6 +22,9 @@ tower-lsp = "0.20.0"
 futures = "0.3.30"
 colored = "2.1.0"
 git2 = "0.19.0"
+rem-borrower = "0.1.1"
+rem-controller = "0.1.1"
+rem-repairer = "0.1.1"
 
 [build-dependencies]
 
